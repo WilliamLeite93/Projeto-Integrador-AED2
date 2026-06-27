@@ -1,3 +1,5 @@
+import ordenacao
+
 MAX_HISTORICO = 100
 historico_pilha = [None] * MAX_HISTORICO
 topo = -1
@@ -45,6 +47,11 @@ def gerar_id(nome):
     soma = sum(ord(letra) for letra in nome)
     return nome[:3].upper() + "-" + str(soma % 10000)
 
+def obter_campo_ocorrencia(ocorrencia, campo):
+    if isinstance(ocorrencia, dict):
+        return ocorrencia.get(campo, "")
+    return getattr(ocorrencia, campo, "")
+
 def inserir_fila(ocorrencia):
     pass
 
@@ -61,12 +68,91 @@ def buscar_por_hash():
     pass
 
 def ordenar_lista_manual():
-    pass
+    if not ocorrencias:
+        print("\nNenhuma ocorrencia cadastrada para ordenar.")
+        return
+
+    print("\nORDENAR OCORRENCIAS")
+    print("1 - Ordenar por ID (crescente)")
+    print("2 - Ordenar por nome (A-Z)")
+    print("3 - Ordenar por prioridade (maior para menor)")
+    print("0 - Voltar")
+
+    opcao = input("Escolha o criterio de ordenacao: ")
+
+    if opcao == "1":
+        ordenacao.ordenar_por_id(ocorrencias)
+        criterio = "ID"
+    elif opcao == "2":
+        ordenacao.ordenar_por_nome(ocorrencias)
+        criterio = "nome"
+    elif opcao == "3":
+        ordenacao.ordenar_por_prioridade(ocorrencias)
+        criterio = "prioridade"
+    elif opcao == "0":
+        return
+    else:
+        print("\nOpcao invalida!")
+        return
+
+    print(f"\nOcorrencias ordenadas por {criterio}:")
+    for ocorrencia in ocorrencias:
+        print(
+            f"ID: {obter_campo_ocorrencia(ocorrencia, 'id')} | "
+            f"Nome: {obter_campo_ocorrencia(ocorrencia, 'nome')} | "
+            f"Tipo: {obter_campo_ocorrencia(ocorrencia, 'tipo')} | "
+            f"Prioridade: {obter_campo_ocorrencia(ocorrencia, 'prioridade')} | "
+            f"Status: {obter_campo_ocorrencia(ocorrencia, 'status')}"
+        )
+
+    adicionar_ao_historico(f"Ordenacao de ocorrencias por {criterio}")
 
 def gerar_massa_testes():
-    pass
+    global proximo_ordem
+
+    dados_teste = [
+        ("Marina Silva", "Laboratorio", "Projetor do laboratorio nao liga.", 2),
+        ("Ana Costa", "Biblioteca", "Computador de consulta travando.", 5),
+        ("Lucas Pereira", "Secretaria", "Erro ao emitir declaracao.", 3),
+        ("Bruno Almeida", "Financeiro", "Boleto com valor incorreto.", 4),
+        ("Carla Mendes", "TI", "Senha institucional bloqueada.", 1),
+    ]
+
+    ids_existentes = {obter_campo_ocorrencia(ocorrencia, "id") for ocorrencia in ocorrencias}
+    quantidade_inicial = len(ocorrencias)
+
+    for nome, tipo, descricao, prioridade in dados_teste:
+        id_base = gerar_id(nome)
+        id_ocorrencia = id_base
+        contador = 2
+
+        while id_ocorrencia in ids_existentes:
+            id_ocorrencia = f"{id_base}-{contador}"
+            contador += 1
+
+        ocorrencia = {
+            "id": id_ocorrencia,
+            "nome": nome,
+            "tipo": tipo,
+            "descricao": descricao,
+            "prioridade": prioridade,
+            "ordem_chegada": proximo_ordem,
+            "status": "Aberto"
+        }
+
+        proximo_ordem += 1
+        ids_existentes.add(id_ocorrencia)
+        ocorrencias.append(ocorrencia)
+        inserir_fila(ocorrencia)
+        inserir_hash(ocorrencia)
+
+    quantidade_adicionada = len(ocorrencias) - quantidade_inicial
+    print(f"\n{quantidade_adicionada} ocorrencias de teste adicionadas com sucesso!")
+    adicionar_ao_historico(f"Geracao de {quantidade_adicionada} ocorrencias de teste")
 
 def cadastrar_ocorrencia():
+    global proximo_ordem
+
     print("\nCADASTRAR OCORRÊNCIA")
     nome = input("Nome do requisitante: ")
     tipo = input("Tipo da ocorrência: ")
@@ -89,7 +175,6 @@ def cadastrar_ocorrencia():
         "ordem_chegada": proximo_ordem,
         "status": "Aberto"
     }
-    global proximo_ordem
     proximo_ordem += 1
     ocorrencias.append(ocorrencia)
     inserir_fila(ocorrencia)
