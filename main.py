@@ -1,3 +1,5 @@
+from indice_hash import inserir_hash, buscar_hash
+
 MAX_HISTORICO = 100
 historico_pilha = [None] * MAX_HISTORICO
 topo = -1
@@ -52,9 +54,6 @@ def listar_todas():
     pass
 
 def atender_fila():
-    pass
-
-def inserir_hash(ocorrencia):
     pass
 
 def buscar_por_hash():
