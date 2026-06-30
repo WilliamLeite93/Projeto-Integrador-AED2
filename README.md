@@ -39,16 +39,38 @@ Abaixo está a descrição detalhada das funções de cada integrante:
 
 ---
 
-### 👤 Integrante 3: O Indexador (Tabela Hash Customizada)
-*Responsável por criar um índice remissivo em memória para permitir a busca instantânea de ocorrências através de textos.*
+### 👤 Integrante 3: O Indexador e Gerenciador de Prioridade
+*Responsável por implementar a busca rápida de ocorrências usando tabela hash e o atendimento por prioridade usando heap.*
 
-* **Arquivo:** `hash_table.py`
-* **Estrutura de Dados:** Tabela Hash com tratamento de colisões por Encadeamento (Lista Encadeada).
+#### Tabela Hash
+
+* **Arquivo:** `indice_hash.py`
+* **Estrutura de Dados:** Tabela Hash com tratamento de colisões por encadeamento usando lista ligada.
 * **Funções e Responsabilidades:**
-    * `*class NodeHash:*` *[Integrante 3: criar o nó para a lista encadeada de colisões]*
-    * `*TabelaHash._funcao_hash(chave):*` *[Integrante 3: método interno para transformar a string (Nome/Tipo) em um índice numérico]*
-    * `*TabelaHash.inserir(chave, ocorrencia):*` *[Integrante 3: associa a ocorrência ao índice correto na tabela]*
-    * `*TabelaHash.buscar(chave):*` *[Integrante 3: busca e retorna a lista de ocorrências vinculadas àquela chave]*
+    * `class NoHash:` cria o nó utilizado no encadeamento das colisões.
+    * `funcao_hash(chave):` transforma uma chave textual em um índice da tabela.
+    * `inserir_indice(chave, ocorrencia):` insere uma ocorrência na tabela hash usando uma chave.
+    * `indexar_ocorrencia(ocorrencia):` indexa a ocorrência pelo nome do solicitante e pelo tipo.
+    * `buscar_no_indice(chave):` busca ocorrências associadas a uma chave.
+    * `inserir_hash(ocorrencia):` adiciona a ocorrência na tabela hash.
+    * `buscar_hash(chave):` retorna as ocorrências encontradas por nome ou tipo.
+
+A tabela hash foi usada para permitir buscas rápidas por nome do solicitante ou por tipo de ocorrência. Ao cadastrar uma ocorrência, ela é inserida na hash usando duas chaves: o nome e o tipo.
+
+#### Heap de Prioridade
+
+* **Arquivo:** `heap_prioridade.py`
+* **Estrutura de Dados:** Heap máxima (*Max Heap*), usada como fila de prioridade.
+* **Funções e Responsabilidades:**
+    * `class HeapPrioridade:` controla a estrutura da heap em memória.
+    * `inserir(ocorrencia):` insere uma ocorrência na heap de acordo com sua prioridade.
+    * `remover_maior_prioridade():` remove e retorna a ocorrência com maior prioridade.
+    * `tem_maior_prioridade(ocorrencia_a, ocorrencia_b):` compara duas ocorrências pela prioridade.
+    * `subir(indice):` reorganiza a heap após uma inserção.
+    * `descer(indice):` reorganiza a heap após uma remoção.
+    * `esta_vazia():` verifica se a heap está vazia.
+
+A heap foi usada para atender primeiro as ocorrências mais críticas. Como a prioridade varia de 1 a 5, a ocorrência com prioridade 5 deve ser atendida antes das ocorrências com prioridade menor. Em caso de empate, a ordem de chegada pode ser usada como critério de desempate.
 
 ---
 
