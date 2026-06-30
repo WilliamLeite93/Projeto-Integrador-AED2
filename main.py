@@ -1,6 +1,10 @@
 from indice_hash import inserir_hash, buscar_hash
+from fluxo import GerenciadorFluxo
+from heap_prioridade import HeapPrioridade
 import ordenacao
 
+gerenciador_fluxo = GerenciadorFluxo()
+heap_prioridade = HeapPrioridade()
 
 MAX_HISTORICO = 100
 historico_pilha = [None] * MAX_HISTORICO
@@ -55,20 +59,92 @@ def obter_campo_ocorrencia(ocorrencia, campo):
     return getattr(ocorrencia, campo, "")
 
 def inserir_fila(ocorrencia):
-    pass
+    
+    gerenciador_fluxo.adicionar_ocorrencia(ocorrencia)
 
 def listar_todas():
-    pass
+    lista = gerenciador_fluxo.lista_geral
+
+    if len(lista) == 0:
+        print("\nNenhuma Ocorrência cadastrada.")
+        return
+    
+    print("\n ===== LISTAGEM GERAL DE OCORRÊNCIAS =====")
+
+    for ocorrencia in lista:
+        print(
+            f"ID: {ocorrencia['id']} | "
+            f"Nome: {ocorrencia['nome']} | "
+            f"Tipo: {ocorrencia['tipo']} | "
+            f"Prioridade: {ocorrencia['prioridade']} | "
+            f"Ordem de chegada: {ocorrencia['ordem_chegada']} | "
+            f"Status: {ocorrencia['status']}"
+        )
+
+        print(f"Descrição: {ocorrencia['descricao']}")
+        print("-"*50)
 
 def atender_fila():
-    pass
+    while True:
+        ocorrencia = gerenciador_fluxo.fila_chegada.dequeue()
+
+        if ocorrencia is None:
+            print("\nNenhuma ocorrência na fila de atendimento")
+            return
+    
+        if ocorrencia["status"]  != "Atendida":
+            break
+    
+    ocorrencia["status"] = "Atendida"
+
+    print("\n===== OCORRÊNCIA ATENDIDA =====")
+    print(
+        f"ID: {ocorrencia['id']} | "
+        f"Nome: {ocorrencia['nome']} | "
+        f"Tipo: {ocorrencia['tipo']} | "
+        f"Prioridade: {ocorrencia['prioridade']} | "
+        f"Ordem de chegada: {ocorrencia['ordem_chegada']} | "
+        f"Status: {ocorrencia['status']}"
+    )
+    print(f"Descrição: {ocorrencia['descricao']}")
+    print("-" * 50)
+
+def atender_prioridade():
+
+    while True:
+        ocorrencia = heap_prioridade.remover_maior_prioridade()
+
+        if ocorrencia is None:
+            print("\nNenhuma ocorrência na fila de prioridade")
+
+        if ocorrencia["status"] != "Atendida":
+            break
+
+    ocorrencia["status"] = "Atendida"
+
+    print("\n===== OCORRÊNCIA ATENDIDA POR PRIORIDADE =====")
+    print(
+        f"ID: {ocorrencia['id']} | "
+        f"Nome: {ocorrencia['nome']} | "
+        f"Tipo: {ocorrencia['tipo']} | "
+        f"Prioridade: {ocorrencia['prioridade']} | "
+        f"Ordem de chegada: {ocorrencia['ordem_chegada']} | "
+        f"Status: {ocorrencia['status']}"
+    )
+    print(f"Descrição: {ocorrencia['descricao']}")
+    print("-" * 50)
+
+
+    adicionar_ao_historico(
+        f"Atendimento por prioridade da ocorrência ID {ocorrencia['id']}"
+    )
 
 def buscar_por_hash():
     print("\nBUSCAR POR HASH")
     print("1 - Buscar por nome")
     print("2 - Buscar por tipo")
 
-    opcao = input("Escolha uma opção: ")
+    opcao = int(input("Escolha uma opção: "))
 
     if opcao == 1:
         chave = input("Digite o nome do requisitante: ")
@@ -99,7 +175,9 @@ def buscar_por_hash():
 
 
 def ordenar_lista_manual():
-    if not ocorrencias:
+    lista = gerenciador_fluxo.lista_geral
+
+    if not lista:
         print("\nNenhuma ocorrencia cadastrada para ordenar.")
         return
 
@@ -112,13 +190,13 @@ def ordenar_lista_manual():
     opcao = input("Escolha o criterio de ordenacao: ")
 
     if opcao == "1":
-        ordenacao.ordenar_por_id(ocorrencias)
+        ordenacao.ordenar_por_id(lista)
         criterio = "ID"
     elif opcao == "2":
-        ordenacao.ordenar_por_nome(ocorrencias)
+        ordenacao.ordenar_por_nome(lista)
         criterio = "nome"
     elif opcao == "3":
-        ordenacao.ordenar_por_prioridade(ocorrencias)
+        ordenacao.ordenar_por_prioridade(lista)
         criterio = "prioridade"
     elif opcao == "0":
         return
@@ -127,7 +205,7 @@ def ordenar_lista_manual():
         return
 
     print(f"\nOcorrencias ordenadas por {criterio}:")
-    for ocorrencia in ocorrencias:
+    for ocorrencia in lista:
         print(
             f"ID: {obter_campo_ocorrencia(ocorrencia, 'id')} | "
             f"Nome: {obter_campo_ocorrencia(ocorrencia, 'nome')} | "
@@ -141,6 +219,8 @@ def ordenar_lista_manual():
 def gerar_massa_testes():
     global proximo_ordem
 
+    lista = gerenciador_fluxo.lista_geral
+
     dados_teste = [
         ("Marina Silva", "Laboratorio", "Projetor do laboratorio nao liga.", 2),
         ("Ana Costa", "Biblioteca", "Computador de consulta travando.", 5),
@@ -149,8 +229,9 @@ def gerar_massa_testes():
         ("Carla Mendes", "TI", "Senha institucional bloqueada.", 1),
     ]
 
-    ids_existentes = {obter_campo_ocorrencia(ocorrencia, "id") for ocorrencia in ocorrencias}
-    quantidade_inicial = len(ocorrencias)
+    ids_existentes = {obter_campo_ocorrencia(ocorrencia, "id") for ocorrencia in lista}
+    
+    quantidade_inicial = len(lista)
 
     for nome, tipo, descricao, prioridade in dados_teste:
         id_base = gerar_id(nome)
@@ -173,11 +254,11 @@ def gerar_massa_testes():
 
         proximo_ordem += 1
         ids_existentes.add(id_ocorrencia)
-        ocorrencias.append(ocorrencia)
         inserir_fila(ocorrencia)
+        heap_prioridade.inserir(ocorrencia)
         inserir_hash(ocorrencia)
 
-    quantidade_adicionada = len(ocorrencias) - quantidade_inicial
+    quantidade_adicionada = len(lista) - quantidade_inicial
     print(f"\n{quantidade_adicionada} ocorrencias de teste adicionadas com sucesso!")
     adicionar_ao_historico(f"Geracao de {quantidade_adicionada} ocorrencias de teste")
 
@@ -206,9 +287,11 @@ def cadastrar_ocorrencia():
         "status": "Aberto"
     }
     proximo_ordem += 1
-    ocorrencias.append(ocorrencia)
+    
     inserir_fila(ocorrencia)
+    heap_prioridade.inserir(ocorrencia)
     inserir_hash(ocorrencia)
+    
     print("\nOcorrência cadastrada com sucesso!")
     print(f"ID gerado: {id_ocorrencia}")
     adicionar_ao_historico(f"Cadastro da ocorrência ID {id_ocorrencia}")
@@ -222,11 +305,12 @@ def iniciar_sistema():
         print("1 - Cadastrar ocorrência")
         print("2 - Listar ocorrências")
         print("3 - Atender próxima (Fila FIFO)")
-        print("4 - Buscar por Nome/Tipo (Hash Table)")
-        print("5 - Ordenar ocorrências")
-        print("6 - Gerar massa de testes")
-        print("7 - Ver histórico de ações")
-        print("8 - Desfazer última ação")
+        print("4 - Atender ocorrência de maior prioridade")
+        print("5 - Buscar por Nome/Tipo (Hash Table)")
+        print("6 - Ordenar ocorrências")
+        print("7 - Gerar massa de testes")
+        print("8 - Ver histórico de ações")
+        print("9 - Desfazer última ação")
         print("0 - Sair")
         print("="*40)
         opcao = input("Escolha uma opção: ")
@@ -238,14 +322,16 @@ def iniciar_sistema():
             atender_fila()
             adicionar_ao_historico("Atendimento via fila realizado")
         elif opcao == "4":
-            buscar_por_hash()
+            atender_prioridade()
         elif opcao == "5":
-            ordenar_lista_manual()
+            buscar_por_hash()
         elif opcao == "6":
-            gerar_massa_testes()
+            ordenar_lista_manual()
         elif opcao == "7":
-            exibir_historico()
+            gerar_massa_testes()
         elif opcao == "8":
+            exibir_historico()
+        elif opcao == "9":
             desfazer_ultima_acao()
         elif opcao == "0":
             print("\nEncerrando o sistema. Até logo!")
