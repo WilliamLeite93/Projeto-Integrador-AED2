@@ -1,4 +1,6 @@
+from indice_hash import inserir_hash, buscar_hash
 import ordenacao
+
 
 MAX_HISTORICO = 100
 historico_pilha = [None] * MAX_HISTORICO
@@ -61,11 +63,40 @@ def listar_todas():
 def atender_fila():
     pass
 
-def inserir_hash(ocorrencia):
-    pass
-
 def buscar_por_hash():
-    pass
+    print("\nBUSCAR POR HASH")
+    print("1 - Buscar por nome")
+    print("2 - Buscar por tipo")
+
+    opcao = input("Escolha uma opção: ")
+
+    if opcao == 1:
+        chave = input("Digite o nome do requisitante: ")
+    elif opcao == 2:
+        chave = input("Digite o tipo da ocorrência: ")
+    else:
+        print("Opção inválida!")
+        return
+    
+    resultados = buscar_hash(chave)
+
+    if len(resultados) == 0:
+        print("\nNenhuma ocorrência encontrada")
+        return
+    
+    print("\nOcorrências encontradas:")
+
+    for ocorrencia in resultados:
+        print(
+            f"ID: {ocorrencia['id']} | "
+            f"Nome: {ocorrencia['nome']} | "
+            f"Tipo: {ocorrencia['tipo']} | "
+            f"Prioridade: {ocorrencia['prioridade']} | "
+            f"Status: {ocorrencia['status']}"
+        )
+        print(f"Descrição: {ocorrencia['descricao']}")
+        print("-" * 50)
+
 
 def ordenar_lista_manual():
     if not ocorrencias:
@@ -152,7 +183,6 @@ def gerar_massa_testes():
 
 def cadastrar_ocorrencia():
     global proximo_ordem
-
     print("\nCADASTRAR OCORRÊNCIA")
     nome = input("Nome do requisitante: ")
     tipo = input("Tipo da ocorrência: ")
